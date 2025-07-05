@@ -1,13 +1,12 @@
 {
-  "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "github.com/r4j3sh-com/soxyCheckerGui",
-  "outputfilename": "soxyCheckerGui",
+  "name": "soxyCheckerGui",
+  "outputfilename": "soxyChecker",
   "frontend:install": "npm install",
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
   "author": {
-    "name": "seclyze",
-    "email": "hi@seclyze.com"
+    "name": "r4j3sh",
+    "email": "hi@r4j3sh.com"
   }
 }

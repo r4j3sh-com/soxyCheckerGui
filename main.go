@@ -12,17 +12,15 @@ import (
 	"embed"
 	"log"
 
-	"github.com/r4j3sh-com/soxyCheckerGui/backend"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+
+	"github.com/r4j3sh-com/soxyCheckerGui/backend"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
-
-// App is re-exported from the backend package
-type App1 = backend.App
 
 func main() {
 	// Create an instance of the app structure
@@ -30,7 +28,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "soxyChecker GUI",
+		Title:  "SoxyChecker GUI",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{

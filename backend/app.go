@@ -11,11 +11,13 @@ package backend
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/r4j3sh-com/soxyCheckerGui/backend/checker"
+	"github.com/r4j3sh-com/soxyCheckerGui/backend/config"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -23,6 +25,7 @@ import (
 type App struct {
 	ctx        context.Context
 	manager    *checker.Manager
+	config     *config.ConfigManager
 	resultsMux sync.Mutex
 	results    []ProxyResult
 }
@@ -66,6 +69,7 @@ type CheckParams struct {
 func NewApp() *App {
 	return &App{
 		manager: checker.NewManager(),
+		config:  config.GetInstance(),
 		results: make([]ProxyResult, 0),
 	}
 }
@@ -74,6 +78,27 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+	// Load configuration
+	if err := a.config.Load(); err != nil {
+		log.Printf("Failed to load config: %v", err)
+	}
+}
+
+// Greet returns a greeting for the given name
+func (a *App) Greet(name string) string {
+	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+// GetConfig returns the current configuration
+func (a *App) GetConfig() config.Config {
+	return a.config.GetConfig()
+}
+
+// UpdateConfig updates the configuration
+func (a *App) UpdateConfig(cfg config.Config) error {
+	return a.config.UpdateConfig(func(c *config.Config) {
+		*c = cfg
+	})
 }
 
 // StartCheck starts checking proxies with the given parameters
