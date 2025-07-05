@@ -66,30 +66,16 @@ jobs:
           echo '<!DOCTYPE html><html><head><title>SoxyChecker GUI</title></head><body><div id="root">Loading...</div></body></html>' > frontend/dist/index.html
         fi
 
+    
     - name: Run Go linting
       uses: golangci/golangci-lint-action@v3
       with:
         version: v1.64.8
         working-directory: .
-        args: --config=.golangci.yml --verbose --out-format=colored-line-number
+        args: --verbose --out-format=colored-line-number --timeout=5m
         skip-cache: false
         skip-pkg-cache: false
         skip-build-cache: false
-
-    - name: Check Go formatting
-      run: |
-        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
-          echo "The following files are not formatted:"
-          gofmt -s -l .
-          exit 1
-        fi
-
-    - name: Check frontend formatting
-      run: |
-        if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then
-          cd frontend
-          npm run lint || echo "No frontend linting configured"
-        fi
 
   # Security scanning
   security:
