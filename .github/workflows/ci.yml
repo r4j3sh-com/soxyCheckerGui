@@ -147,6 +147,7 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
 
     - name: Install Node dependencies
+      shell: bash
       run: |
         if [ -d "frontend" ]; then
           cd frontend
@@ -158,6 +159,7 @@ jobs:
         fi
 
     - name: Create frontend dist for tests
+      shell: bash
       run: |
         if [ -d "frontend" ]; then
           cd frontend
