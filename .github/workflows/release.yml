@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  GO_VERSION: '1.21'
+  NODE_VERSION: '18'
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        CURRENT_TAG=${GITHUB_REF#refs/tags/}
+        
+        echo "## What's Changed" > CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        
+        if [ -n "$PREV_TAG" ]; then
+          echo "**Full Changelog**: [$PREV_TAG...$CURRENT_TAG](https://github.com/${{ github.repository }}/compare/$PREV_TAG...$CURRENT_TAG)" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          git log --pretty=format:"- %s (%h)" $PREV_TAG..HEAD >> CHANGELOG.md
+        else
+          echo "- Initial release" >> CHANGELOG.md
+        fi
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: SoxyChecker GUI ${{ github.ref }}
+        body_path: CHANGELOG.md
+        draft: false
+        prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+
+  build-and-upload:
+    name: Build and Upload Assets
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux/amd64
+            asset_name: soxyCheckerGui-linux-amd64.tar.gz
+          -          - os: windows-latest
+            platform: windows/amd64
+            asset_name: soxyCheckerGui-windows-amd64.zip
+          - os: macos-latest
+            platform: darwin/amd64
+            asset_name: soxyCheckerGui-darwin-amd64.tar.gz
+          - os: macos-latest
+            platform: darwin/arm64
+            asset_name: soxyCheckerGui-darwin-arm64.tar.gz
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ env.GO_VERSION }}
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Install Wails
+      run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+    - name: Install dependencies
+      run: |
+        go mod download
+        cd frontend && npm ci
+
+    - name: Build application
+      run: wails build -platform ${{ matrix.platform }} -clean -s -trimpath
+
+    - name: Package Linux/macOS
+      if: matrix.os != 'windows-latest'
+      run: |
+        cd build/bin
+        tar -czf ${{ matrix.asset_name }} *
+
+    - name: Package Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd build/bin
+        7z a ${{ matrix.asset_name }} *
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: build/bin/${{ matrix.asset_name }}
+        asset_name: ${{ matrix.asset_name }}
+        asset_content_type: application/octet-stream

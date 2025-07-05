@@ -1,0 +1,498 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    background-color: rgba(27, 38, 54, 1);
+    text-align: center;
+    color: white;
+}
+
+body {
+    margin: 0;
+    color: white;
+    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+        "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+}
+
+@font-face {
+    font-family: "Nunito";
+    font-style: normal;
+    font-weight: 400;
+    src: local(""),
+        url("assets/fonts/nunito-v16-latin-regular.woff2") format("woff2");
+}
+
+#app {
+    height: 100vh;
+    text-align: center;
+}
+
+.log-panel {
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 16px;
+    height: 200px;
+    overflow: hidden;
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #e9ecef;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.log-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.clear-logs-button {
+    background-color: transparent;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+.clear-logs-button:hover {
+    color: #dc3545;
+    text-decoration: underline;
+}
+
+.log-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.log-entry {
+    margin-bottom: 4px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.log-timestamp {
+    color: #6c757d;
+    margin-right: 8px;
+}
+
+.log-message {
+    color: #212529;
+}
+
+.empty-log-message {
+    color: #6c757d;
+    font-style: italic;
+    text-align: center;
+    margin-top: 60px;
+}
+
+/* For dark mode support */
+@media (prefers-color-scheme: dark) {
+    .log-panel {
+        background-color: #1e1e1e;
+        border-color: #333;
+    }
+
+    .log-header {
+        background-color: #2d2d2d;
+        border-color: #444;
+    }
+
+    .log-timestamp {
+        color: #adb5bd;
+    }
+
+    .log-message {
+        color: #e9ecef;
+    }
+
+    .empty-log-message {
+        color: #adb5bd;
+    }
+
+    .clear-logs-button {
+        color: #adb5bd;
+    }
+
+    .clear-logs-button:hover {
+        color: #f8f9fa;
+    }
+}
+
+/* Scrollbar styling for better UX */
+.log-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.log-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.log-container::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.log-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+    .log-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .log-container::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .log-container::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+}
+
+.results-table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.results-table th,
+.results-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.results-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    cursor: pointer;
+    user-select: none;
+}
+
+.results-table th:hover {
+    background-color: #e9ecef;
+}
+
+.results-table th::after {
+    margin-left: 5px;
+    display: inline-block;
+    width: 0;
+}
+
+.results-table th.sort-asc::after {
+    content: "▲";
+    font-size: 10px;
+}
+
+.results-table th.sort-desc::after {
+    content: "▼";
+    font-size: 10px;
+}
+
+.results-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.status-live {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.status-dead {
+    color: #dc3545;
+}
+
+.status-error {
+    color: #fd7e14;
+}
+
+.error-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.error-cell:hover {
+    white-space: normal;
+    word-break: break-word;
+}
+
+.no-results {
+    text-align: center;
+    color: #6c757d;
+    padding: 30px 0;
+    font-style: italic;
+}
+
+/* For dark mode support */
+@media (prefers-color-scheme: dark) {
+    .results-table-container {
+        border-color: #444;
+    }
+
+    .results-table th,
+    .results-table td {
+        border-color: #444;
+    }
+
+    .results-table th {
+        background-color: #2d2d2d;
+        color: #e9ecef;
+    }
+
+    .results-table th:hover {
+        background-color: #3d3d3d;
+    }
+
+    .results-table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .no-results {
+        color: #adb5bd;
+    }
+
+    .status-live {
+        color: #5cb85c;
+    }
+
+    .status-dead {
+        color: #d9534f;
+    }
+
+    .status-error {
+        color: #f0ad4e;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+
+    .results-table th,
+    .results-table td {
+        padding: 8px;
+    }
+
+    .error-cell {
+        max-width: 100px;
+    }
+}
+
+.export-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.export-dialog {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.export-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.export-dialog-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.close-button:hover {
+    color: #343a40;
+}
+
+.export-dialog-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.export-options {
+    margin-bottom: 20px;
+}
+
+.export-options label {
+    display: block;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.export-options input[type="radio"] {
+    margin-right: 8px;
+}
+
+.export-preview {
+    margin-top: 20px;
+}
+
+.export-preview h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #6c757d;
+}
+
+.export-preview textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    resize: none;
+    background-color: #f8f9fa;
+}
+
+.export-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 20px;
+    border-top: 1px solid #e9ecef;
+    gap: 10px;
+}
+
+.export-dialog-footer button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+}
+
+.copy-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.copy-button:hover {
+    background-color: #5a6268;
+}
+
+.copy-button.copied {
+    background-color: #28a745;
+}
+
+.save-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.save-button:hover {
+    background-color: #0069d9;
+}
+
+.cancel-button {
+    background-color: transparent;
+    border: 1px solid #ced4da !important;
+}
+
+.cancel-button:hover {
+    background-color: #f8f9fa;
+}
+
+/* For dark mode support */
+@media (prefers-color-scheme: dark) {
+    .export-dialog {
+        background-color: #2a2a2a;
+        color: #e9ecef;
+    }
+
+    .export-dialog-header,
+    .export-dialog-footer {
+        border-color: #444;
+    }
+
+    .close-button {
+        color: #adb5bd;
+    }
+
+    .close-button:hover {
+        color: #f8f9fa;
+    }
+
+    .export-preview h3 {
+        color: #adb5bd;
+    }
+
+    .export-preview textarea {
+        background-color: #1e1e1e;
+        border-color: #444;
+        color: #e9ecef;
+    }
+
+    .cancel-button {
+        border-color: #444 !important;
+        color: #e9ecef;
+    }
+
+    .cancel-button:hover {
+        background-color: #3d3d3d;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .export-dialog-footer {
+        flex-direction: column;
+    }
+
+    .export-dialog-footer button {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
