@@ -6,8 +6,16 @@ export function ClearResults() {
   return window['go']['backend']['App']['ClearResults']();
 }
 
+export function GetConfig() {
+  return window['go']['backend']['App']['GetConfig']();
+}
+
 export function GetWorkingProxies() {
   return window['go']['backend']['App']['GetWorkingProxies']();
+}
+
+export function Greet(arg1) {
+  return window['go']['backend']['App']['Greet'](arg1);
 }
 
 export function PauseCheck() {
@@ -24,4 +32,8 @@ export function StartCheck(arg1) {
 
 export function StopCheck() {
   return window['go']['backend']['App']['StopCheck']();
+}
+
+export function UpdateConfig(arg1) {
+  return window['go']['backend']['App']['UpdateConfig'](arg1);
 }

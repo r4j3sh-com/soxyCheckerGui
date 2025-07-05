@@ -20,7 +20,7 @@ go.work
 
 # Build directories
 build/
-dist/
+#dist/
 bin/
 
 # Wails build directory
