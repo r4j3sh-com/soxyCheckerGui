@@ -30,6 +30,21 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
 
+    
+    - name: Format Go code
+      run: |
+        gofmt -s -w .
+        go mod tidy
+
+    - name: Check if formatting changed files
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Code formatting or go mod tidy made changes:"
+          git diff
+          echo "Please run 'gofmt -s -w .' and 'go mod tidy' locally and commit the changes"
+          exit 1
+        fi
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:

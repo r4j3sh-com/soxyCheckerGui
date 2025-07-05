@@ -1,7 +1,7 @@
 /*
  * SoxyChecker GUI - A powerful proxy checker application
  * Copyright (c) 2025 Rajesh Mondal (r4j3sh.com)
- * 
+ *
  * This software is licensed under the MIT License.
  * See the LICENSE file in the project root for full license information.
  */
@@ -170,7 +170,9 @@ func checkSOCKS4Quick(proxy string, timeout time.Duration) bool {
 	}
 
 	// Set a deadline for the connection
-	conn.SetDeadline(time.Now().Add(timeout))
+	if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {
+		return false
+	}
 
 	// Send the request
 	_, err = conn.Write(request)

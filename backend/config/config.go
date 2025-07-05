@@ -1,7 +1,7 @@
 /*
  * SoxyChecker GUI - A powerful proxy checker application
  * Copyright (c) 2025 Rajesh Mondal (r4j3sh.com)
- * 
+ *
  * This software is licensed under the MIT License.
  * See the LICENSE file in the project root for full license information.
  */
@@ -101,7 +101,13 @@ func GetInstance() *ConfigManager {
 			config: DefaultConfig(),
 		}
 		instance.configPath = getConfigPath()
-		instance.Load()
+
+		// Update the Load call to handle the error (around line 104)
+		if err := instance.Load(); err != nil {
+			// Handle the error appropriately - you might want to log it or return it
+			// For now, we'll just ignore it to maintain existing behavior
+			_ = err
+		}
 	})
 	return instance
 }
