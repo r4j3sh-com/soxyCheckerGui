@@ -54,7 +54,13 @@ jobs:
       run: go mod download
 
     - name: Install Node dependencies
-      run: cd frontend && npm ci
+      run: |
+        cd frontend
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
 
     - name: Run Go linting
       uses: golangci/golangci-lint-action@v3
@@ -131,10 +137,14 @@ jobs:
       with:
         node-version: ${{ env.NODE_VERSION }}
 
-    - name: Install dependencies
+    - name: Install Node dependencies
       run: |
-        go mod download
-        cd frontend && npm ci
+        cd frontend
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
 
     - name: Run Go tests
       run: go test -v -race -coverprofile=coverage.out ./...
@@ -177,7 +187,12 @@ jobs:
     - name: Install dependencies
       run: |
         go mod download
-        cd frontend && npm ci
+        cd frontend
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
 
     - name: Build frontend
       run: |
