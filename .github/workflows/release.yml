@@ -61,7 +61,7 @@ jobs:
           - os: ubuntu-latest
             platform: linux/amd64
             asset_name: soxyCheckerGui-linux-amd64.tar.gz
-          -          - os: windows-latest
+          - os: windows-latest
             platform: windows/amd64
             asset_name: soxyCheckerGui-windows-amd64.zip
           - os: macos-latest
