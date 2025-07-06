@@ -169,11 +169,46 @@ jobs:
         if [ ! -f "frontend/dist/index.html" ]; then
           echo '<!DOCTYPE html><html><head><title>Test</title></head><body><div id="root">Test</div></body></html>' > frontend/dist/index.html
         fi
+    
+    - name: Install macOS dependencies
+      if: matrix.os == 'macos-latest'
+      shell: bash
+      run: |
+        # Wails dependencies are usually available by default on macOS
+        echo "macOS dependencies are pre-installed"
+
+    - name: Install Windows dependencies
+      if: matrix.os == 'windows-latest'
+      shell: bash
+      run: |
+        # Install WebView2 (usually pre-installed on GitHub runners)
+        # No additional dependencies needed for Windows
+        echo "Windows dependencies are pre-installed"
+    
+    - name: Install Wails
+      shell: bash
+      run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+    
+    - name: Install dependencies
+      shell: bash
+      run: |
+        go mod download
+        if [ -d "frontend" ]; then
+          cd frontend
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+        fi
 
     - name: Run Go tests
+      shell: bash
       run: go test -v -race -coverprofile=coverage.out ./backend/...
 
     - name: Run frontend tests
+      shell: bash
+      if: matrix.os == 'ubuntu-latest' || matrix.os == 'windows-latest' || matrix.os =='macos-latest'
       run: |
         if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then
           cd frontend
@@ -210,45 +245,54 @@ jobs:
     
     - name: Install Linux dependencies
       if: matrix.os == 'ubuntu-latest'
+      shell: bash
       run: |
         sudo apt-get update
         sudo apt-get install -y \
           build-essential \
           pkg-config \
           libgtk-3-dev \
-          libwebkit2gtk-4.0-dev \
+          libwebkit2gtk-4.1-dev \
           libayatana-appindicator3-dev \
           librsvg2-dev
 
     
     - name: Install macOS dependencies
       if: matrix.os == 'macos-latest'
+      shell: bash
       run: |
         # Wails dependencies are usually available by default on macOS
+        echo "macOS dependencies are pre-installed"
+
 
     
     - name: Install Windows dependencies
       if: matrix.os == 'windows-latest'
+      shell: bash
       run: |
         # Install WebView2 (usually pre-installed on GitHub runners)
         # No additional dependencies needed for Windows
-
-  
+        echo "Windows dependencies are pre-installed"
 
     - name: Install Wails
+      shell: bash
       run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
     - name: Install dependencies
+      shell: bash
       run: |
         go mod download
-        cd frontend
-        if [ -f package-lock.json ]; then
-          npm ci
-        else
-          npm install
+        if [ -d "frontend" ]; then
+          cd frontend
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
         fi
 
     - name: Build frontend
+      shell: bash
       run: |
         if [ -d "frontend" ]; then
           cd frontend
@@ -260,4 +304,5 @@ jobs:
         fi
 
     - name: Build application
+      shell: bash
       run: wails build -clean
