@@ -1,3 +1,4 @@
+
 name: Release
 
 on:
@@ -18,21 +19,24 @@ jobs:
     name: Build and Release
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
             platform: linux/amd64
             asset_name: soxyCheckerGui-linux-amd64.tar.gz
+            archive_cmd: tar -czf
           - os: windows-latest
             platform: windows/amd64
             asset_name: soxyCheckerGui-windows-amd64.zip
+            archive_cmd: 7z a
           - os: macos-latest
             platform: darwin/amd64
             asset_name: soxyCheckerGui-darwin-amd64.tar.gz
+            archive_cmd: tar -czf
           - os: macos-latest
             platform: darwin/arm64
             asset_name: soxyCheckerGui-darwin-arm64.tar.gz
+            archive_cmd: tar -czf
 
     steps:
     - name: Checkout code
@@ -74,14 +78,16 @@ jobs:
     - name: Install Wails
       run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
-    - name: Install Go dependencies
-      run: go mod download
-
-    - name: Install Node dependencies
+    - name: Install dependencies
       run: |
+        go mod download
         if [ -d "frontend" ]; then
           cd frontend
-          npm install
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
         fi
       shell: bash
 
@@ -96,88 +102,48 @@ jobs:
         fi
       shell: bash
 
-    - name: Clean build directory
-      run: |
-        rm -rf build/bin || true
-        mkdir -p build/bin
-      shell: bash
-
     - name: Build application
       run: wails build -platform ${{ matrix.platform }} -clean -s -trimpath
       shell: bash
 
-    - name: List build output
-      run: |
-        echo "Build directory contents:"
-        ls -la build/bin/ || echo "No build/bin directory"
-      shell: bash
-
-    - name: Prepare macOS app for distribution
-      if: runner.os == 'macOS'
+    - name: Package Linux
+      if: matrix.os == 'ubuntu-latest'
       run: |
         cd build/bin
-        if [ -f "soxyCheckerGui.app" ]; then
-          echo "Found .app file"
-        elif [ -d "soxyCheckerGui.app" ]; then
-          echo "Found .app directory"
-          xattr -cr soxyCheckerGui.app || true
-          chmod +x soxyCheckerGui.app/Contents/MacOS/* || true
-        else
-          echo "No .app found, listing contents:"
-          ls -la
-        fi
+        ${{ matrix.archive_cmd }} ${{ matrix.asset_name }} *
       shell: bash
 
-    - name: Package macOS
-      if: runner.os == 'macOS'
+    - name: Package macOS (amd64)
+      if: matrix.os == 'macos-latest' && matrix.platform == 'darwin/amd64'
       run: |
         cd build/bin
         if [ -d "soxyCheckerGui.app" ]; then
-          /usr/bin/tar -czf ${{ matrix.asset_name }} soxyCheckerGui.app
+          ${{ matrix.archive_cmd }} ${{ matrix.asset_name }} soxyCheckerGui.app
+        elif [ -d "soxyChecker-amd64.app" ]; then
+          ${{ matrix.archive_cmd }} ${{ matrix.asset_name }} soxyChecker-amd64.app
         else
-          echo "Error: soxyCheckerGui.app not found"
-          ls -la
-          exit 1
+          echo "No .app bundle found for amd64" && exit 1
         fi
       shell: bash
 
-    - name: Package Linux
-      if: runner.os == 'Linux'
+    - name: Package macOS (arm64)
+      if: matrix.os == 'macos-latest' && matrix.platform == 'darwin/arm64'
       run: |
         cd build/bin
-        if [ -f "soxyCheckerGui" ]; then
-          tar -czf ${{ matrix.asset_name }} soxyCheckerGui
+        if [ -d "soxyCheckerGui.app" ]; then
+          ${{ matrix.archive_cmd }} ${{ matrix.asset_name }} soxyCheckerGui.app
+        elif [ -d "soxyChecker-arm64.app" ]; then
+          ${{ matrix.archive_cmd }} ${{ matrix.asset_name }} soxyChecker-arm64.app
         else
-          echo "Error: soxyCheckerGui binary not found"
-          ls -la
-          exit 1
+          echo "No .app bundle found for arm64" && exit 1
         fi
       shell: bash
 
     - name: Package Windows
-      if: runner.os == 'Windows'
+      if: matrix.os == 'windows-latest'
       run: |
         cd build/bin
-        if (Test-Path "soxyCheckerGui.exe") {
-          7z a ${{ matrix.asset_name }} soxyCheckerGui.exe
-        } else {
-          Write-Host "Error: soxyCheckerGui.exe not found"
-          Get-ChildItem
-          exit 1
-        }
-      shell: powershell
-
-    - name: Verify package created
-      run: |
-        cd build/bin
-        if [ -f "${{ matrix.asset_name }}" ]; then
-          echo "Package created successfully: ${{ matrix.asset_name }}"
-          ls -la ${{ matrix.asset_name }}
-        else
-          echo "Error: Package not created"
-          ls -la
-          exit 1
-        fi
+        ${{ matrix.archive_cmd }} ${{ matrix.asset_name }} *
       shell: bash
 
     - name: Extract tag name
