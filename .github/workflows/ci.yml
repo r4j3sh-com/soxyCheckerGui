@@ -244,27 +244,44 @@ jobs:
     
     
     
+    
     - name: Install Linux dependencies
       if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         sudo apt-get update
-        # Try to install both webkit versions
+        # Install base dependencies
         sudo apt-get install -y \
           build-essential \
           pkg-config \
           libgtk-3-dev \
-          libwebkit2gtk-4.0-dev \
           libwebkit2gtk-4.1-dev \
           libayatana-appindicator3-dev \
-          librsvg2-dev || \
-        sudo apt-get install -y \
-          build-essential \
-          pkg-config \
-          libgtk-3-dev \
-          libwebkit2gtk-4.0-dev \
-          libayatana-appindicator3-dev \
           librsvg2-dev
+
+    - name: Create WebKit compatibility symlinks
+      if: matrix.os == 'ubuntu-latest'
+      shell: bash
+      run: |
+        # Check what webkit packages are available
+        echo "Checking webkit packages..."
+        pkg-config --list-all | grep webkit || echo "No webkit packages found"
+        
+        # Create symlink for webkit2gtk-4.0 to point to webkit2gtk-4.1
+        if pkg-config --exists webkit2gtk-4.1; then
+          echo "webkit2gtk-4.1 found, creating webkit2gtk-4.0 symlink"
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/pkgconfig/webkit2gtk-4.1.pc /usr/lib/x86_64-linux-gnu/pkgconfig/webkit2gtk-4.0.pc
+          
+          # Also create symlinks for the library files
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so || true
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so || true
+          
+          # Verify the symlink works
+          pkg-config --exists webkit2gtk-4.0 && echo "webkit2gtk-4.0 symlink successful" || echo "webkit2gtk-4.0 symlink failed"
+        else
+          echo "webkit2gtk-4.1 not found"
+          exit 1
+        fi
 
     - name: Debug WebKit packages
       if: matrix.os == 'ubuntu-latest'
@@ -276,6 +293,10 @@ jobs:
         dpkg -l | grep webkit || echo "No webkit packages installed"
         echo "pkg-config webkit packages:"
         pkg-config --list-all | grep webkit || echo "No webkit packages found in pkg-config"
+        echo "Testing webkit2gtk-4.0:"
+        pkg-config --exists webkit2gtk-4.0 && echo "webkit2gtk-4.0 OK" || echo "webkit2gtk-4.0 FAILED"
+        echo "Testing webkit2gtk-4.1:"
+        pkg-config --exists webkit2gtk-4.1 && echo "webkit2gtk-4.1 OK" || echo "webkit2gtk-4.1 FAILED"
 
     
     - name: Install macOS dependencies
