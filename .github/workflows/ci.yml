@@ -243,18 +243,39 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
     
     
+    
     - name: Install Linux dependencies
       if: matrix.os == 'ubuntu-latest'
       shell: bash
       run: |
         sudo apt-get update
+        # Try to install both webkit versions
         sudo apt-get install -y \
           build-essential \
           pkg-config \
           libgtk-3-dev \
+          libwebkit2gtk-4.0-dev \
           libwebkit2gtk-4.1-dev \
           libayatana-appindicator3-dev \
+          librsvg2-dev || \
+        sudo apt-get install -y \
+          build-essential \
+          pkg-config \
+          libgtk-3-dev \
+          libwebkit2gtk-4.0-dev \
+          libayatana-appindicator3-dev \
           librsvg2-dev
+
+    - name: Debug WebKit packages
+      if: matrix.os == 'ubuntu-latest'
+      shell: bash
+      run: |
+        echo "Available webkit packages:"
+        apt-cache search webkit2gtk | grep dev
+        echo "Installed webkit packages:"
+        dpkg -l | grep webkit || echo "No webkit packages installed"
+        echo "pkg-config webkit packages:"
+        pkg-config --list-all | grep webkit || echo "No webkit packages found in pkg-config"
 
     
     - name: Install macOS dependencies
