@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 env:
-  GO_VERSION: '1.21'
+  GO_VERSION: '1.23'
   NODE_VERSION: '18'
 
 permissions:
@@ -102,26 +102,29 @@ jobs:
       shell: bash
 
     - name: Prepare macOS app for distribution
-      if: matrix.os == 'macos-latest'
+      if: runner.os == 'macOS'
       run: |
         cd build/bin
         xattr -cr soxyCheckerGui.app || true
         chmod +x soxyCheckerGui.app/Contents/MacOS/* || true
       shell: bash
 
-    - name: Package Linux/macOS
-      if: matrix.os != 'windows-latest'
+    - name: Package macOS
+      if: runner.os == 'macOS'
       run: |
         cd build/bin
-        if [[ "${{ matrix.platform }}" == darwin/* ]]; then
-          /usr/bin/tar -czf ${{ matrix.asset_name }} soxyCheckerGui.app
-        else
-          tar -czf ${{ matrix.asset_name }} soxyCheckerGui
-        fi
+        /usr/bin/tar -czf ${{ matrix.asset_name }} soxyCheckerGui.app
+      shell: bash
+
+    - name: Package Linux
+      if: runner.os == 'Linux'
+      run: |
+        cd build/bin
+        tar -czf ${{ matrix.asset_name }} soxyCheckerGui
       shell: bash
 
     - name: Package Windows
-      if: matrix.os == 'windows-latest'
+      if: runner.os == 'Windows'
       run: |
         cd build/bin
         7z a ${{ matrix.asset_name }} soxyCheckerGui.exe
