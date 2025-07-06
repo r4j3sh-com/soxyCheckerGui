@@ -1,4 +1,3 @@
-
 name: Release
 
 on:
@@ -24,19 +23,15 @@ jobs:
           - os: ubuntu-latest
             platform: linux/amd64
             asset_name: soxyCheckerGui-linux-amd64.tar.gz
-            archive_cmd: tar -czf
           - os: windows-latest
             platform: windows/amd64
             asset_name: soxyCheckerGui-windows-amd64.zip
-            archive_cmd: 7z a
           - os: macos-latest
             platform: darwin/amd64
             asset_name: soxyCheckerGui-darwin-amd64.tar.gz
-            archive_cmd: tar -czf
           - os: macos-latest
             platform: darwin/arm64
             asset_name: soxyCheckerGui-darwin-arm64.tar.gz
-            archive_cmd: tar -czf
 
     steps:
     - name: Checkout code
@@ -110,27 +105,27 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         cd build/bin
-        # Remove quarantine attributes
-        xattr -cr *.app || true
-        # Set executable permissions
-        chmod +x *.app/Contents/MacOS/* || true
+        xattr -cr soxyCheckerGui.app || true
+        chmod +x soxyCheckerGui.app/Contents/MacOS/* || true
       shell: bash
 
     - name: Package Linux/macOS
       if: matrix.os != 'windows-latest'
       run: |
         cd build/bin
-        ${{ matrix.archive_cmd }} ${{ matrix.asset_name }} *
+        if [[ "${{ matrix.platform }}" == darwin/* ]]; then
+          /usr/bin/tar -czf ${{ matrix.asset_name }} soxyCheckerGui.app
+        else
+          tar -czf ${{ matrix.asset_name }} soxyCheckerGui
+        fi
       shell: bash
 
     - name: Package Windows
       if: matrix.os == 'windows-latest'
       run: |
         cd build/bin
-        ${{ matrix.archive_cmd }} ${{ matrix.asset_name }} *
+        7z a ${{ matrix.asset_name }} soxyCheckerGui.exe
       shell: bash
-
-    
 
     - name: Extract tag name
       id: tag
