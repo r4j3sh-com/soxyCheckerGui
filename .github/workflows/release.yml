@@ -106,6 +106,16 @@ jobs:
       run: wails build -platform ${{ matrix.platform }} -clean -s -trimpath
       shell: bash
 
+    - name: Prepare macOS app for distribution
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd build/bin
+        # Remove quarantine attributes
+        xattr -cr *.app || true
+        # Set executable permissions
+        chmod +x *.app/Contents/MacOS/* || true
+      shell: bash
+
     - name: Package Linux/macOS
       if: matrix.os != 'windows-latest'
       run: |
@@ -119,6 +129,8 @@ jobs:
         cd build/bin
         ${{ matrix.archive_cmd }} ${{ matrix.asset_name }} *
       shell: bash
+
+    
 
     - name: Extract tag name
       id: tag
